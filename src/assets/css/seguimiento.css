@@ -1,0 +1,47 @@
+.primero{
+    background-color: rgba(235, 235, 235, 0.938);
+    text-align: center;
+    padding: 20px 10px;
+    margin: 15px auto;
+    height: 210px;
+}
+.tracking-form{
+    background-color: rgba(235, 235, 235, 0.938);
+    text-align: center;
+    padding: 20px 10px;
+    color: black;
+    margin: 15px auto;
+    height: 140px;
+
+    width: 400px;         
+    cursor: auto;
+    line-height: 1;       
+    border-radius: 8px;
+    padding: 3px 35px;    
+
+}
+.btn-rastrear{
+    background-color: #007bff;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 16px;
+}
+.form-control{
+    width: 95%;
+    margin-bottom: 8px; 
+
+    text-align: center;
+    padding: 10px;
+    border-radius: 5px;
+    border: 1px solid #ccc;
+    font-size: 16px;
+}
+.texto{
+    text-align: center;
+    padding: 0px 250px;
+    color: black;
+    font-size: 16.5px;
+}

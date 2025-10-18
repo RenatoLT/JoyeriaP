@@ -1,0 +1,52 @@
+
+.image-holder {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  overflow: hidden;
+  border-radius: 12px;
+}
+
+.image-holder img,
+.image-zoom img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.3s ease;
+  border-radius: 12px;
+}
+
+.categories .image-holder {
+  height: 300px; 
+}
+
+.categories .image-holder img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover; 
+}
+
+.tendencias-swiper .swiper-slide {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.banner-content h5 {
+  font-weight: 600;
+  margin-top: 10px;
+}
+
+
+.product-item .product-content span {
+  color: #555;
+  font-size: 1rem;
+}
+
+@media (max-width: 768px) {
+  .image-holder {
+    height: 220px !important;
+  }
+}
+
+

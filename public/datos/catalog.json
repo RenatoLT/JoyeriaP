@@ -1,0 +1,169 @@
+[
+  {
+    "id": 1,
+    "nombre": "Collar de oro",
+    "descripcion": "Collar fino con detalles de estrellas y lunas",
+    "precio": 350000,
+    "foto": "/src/assets/images/imagen_para_2.jpg",
+    "categoria": "collares",
+    "stock": 15,
+    "especificaciones": {
+      "largo": "45 cm",
+      "material": "Oro 14k",
+      "broche": "Barrel"
+    }
+  },
+  {
+    "id": 2,
+    "nombre": "Cadena de Eslabones",
+    "descripcion": "Cadena de eslabones rectangulares",
+    "precio": 400000,
+    "foto": "/src/assets/images/imagen_pi_2.jpg",
+    "categoria": "collares",
+    "stock": 8,
+    "especificaciones": {
+      "largo": "50 cm",
+      "material": "Oro 14k",
+      "broche": "Open Box"
+    }
+  },
+  {
+    "id": 3,
+    "nombre": "Anillo de Oro",
+    "descripcion": "Anillo clásico en oro de 18k",
+    "precio": 200000,
+    "foto": "/src/assets/images/imagen_pi_3.jpg",
+    "categoria": "anillos",
+    "stock": 12,
+    "especificaciones": {
+      "diametro": "6,6 mm",
+      "material": "Oro 18k",
+      "peso": "8 gr"
+    }
+  },
+  {
+    "id": 4,
+    "nombre": "Aretes de Colgantes",
+    "descripcion": "Aretes elegantes con diseño de colgante",
+    "precio": 150000,
+    "foto": "/src/assets/images/imagen_pi_5.jpg",
+    "categoria": "aros",
+    "stock": 20,
+    "especificaciones": {
+      "peso": "5 gr",
+      "material": "Oro 14k",
+      "cierre": "De barra"
+    }
+  },
+  {
+    "id":5,
+    "nombre":"Set de aros",
+    "descripcion": "Set de aros de oro de 9k",
+    "precio": 50000,
+    "foto": "/src/assets/images/imagen_pi_6.jpg",
+    "categoria": "aros",
+    "stock": 10,
+    "especificaciones": {
+      "peso": "7 gr",
+      "material": "Oro 9k",
+      "cierre": "A presión y De barra"
+    }
+  },
+  {
+    "id":6,
+    "nombre":"Cadena con dije",
+    "descripcion": "Cadena de oro con dije en forma de chapa",
+    "precio": 60000,
+    "foto": "/src/assets/images/imagen_tendencia_1.jpg",
+    "categoria": "collares",
+    "stock": 5,
+    "especificaciones": {
+      "largo": "70 cm",
+      "material": "Plata italiana",
+      "broche": "Lobster Claw"
+    }
+  },
+  {
+    "id":7,
+    "nombre":"Set de 2 aros",
+    "descripcion": "Set de 2 aros bañados en oro",
+    "precio": 45000,
+    "foto": "/src/assets/images/imagen_tendencia_2.jpg",
+    "categoria": "aros",
+    "stock": 18,
+    "especificaciones": {
+      "peso": "5 gr",
+      "material": "bañado en oro 18 kilates",
+      "cierre": "A presión y De barra"
+    }
+  },
+  {
+    "id":8,
+    "nombre":"Anillo de oro con piedra",
+    "descripcion": "Anillo de oro con piedra central redonda",
+    "precio": 250000,
+    "foto": "/src/assets/images/imagen_tendencia_3.jpg",
+    "categoria": "anillos",
+    "stock": 7,
+    "especificaciones": {
+      "diametro": "5,5 mm ",
+      "material": "Oro 18k",
+      "peso": "5 gr"
+    }
+  },
+  {
+    "id":9,
+    "nombre":"brazalete",
+    "descripcion": "Brazalete de oro liso",
+    "precio": 90000,
+    "foto": "/src/assets/images/imagen_tendencia_4.jpg",
+    "categoria": "pulseras",
+    "stock": 10,
+    "especificaciones": {
+      "diametro": "9 cm",
+      "material": "Oro 10k",
+      "broche": "abierto"
+    }
+  },
+  {"id":10,
+    "nombre":"Pulsera de eslabones",
+    "descripcion": "Pulsera de eslabones gruesos",
+    "precio": 120000,
+    "foto": "/src/assets/images/pulseraH.jpg",
+    "categoria": "pulseras",
+    "stock": 14,
+    "especificaciones": {
+      "largo": "20 cm",
+      "material": "Plata italiana",
+      "broche": "Open Box"
+    }
+  },
+  {
+    "id":11,
+    "nombre":"Reloj",
+    "descripcion": "Reloj de acero inoxidable con movimiento de cuarzo",
+    "precio": 50000,
+    "foto": "/src/assets/images/reloj1.jpg",
+    "categoria": "relojes",
+    "stock": 25,
+    "especificaciones": {
+      "diametro": "220 mm",
+      "material": "acero inoxidable",
+      "peso": "105 gr"
+    }
+  },
+  {
+    "id":12,
+    "nombre":"Reloj Invicta pro diver",
+    "descripcion": "Reloj invicta plateado con detalles en dorado",
+    "precio": 214000,
+    "foto": "/src/assets/images/reloj2.jpg",
+    "categoria": "relojes",
+    "stock": 30,
+    "especificaciones": {
+      "largo": "140 mm",
+      "material": "acero inoxidable",
+      "broche": "hebilla"
+    }
+  }
+]
