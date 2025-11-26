@@ -36,6 +36,7 @@ function Header() {
             
               <li className="nav-item"><Link className="nav-link" to="/">Inicio</Link></li>
               <li className="nav-item"><Link className="nav-link" to="/catalog">Tienda</Link></li>
+              <li className="nav-item"><Link className="nav-link" to="/blogs">Blogs</Link></li>
               <li className="nav-item"><Link className="nav-link" to="/contact">Contacto</Link></li>
 
               {!user && (
@@ -48,9 +49,6 @@ function Header() {
               {(user && (isAdmin || isEmpleado || user.role === 'usuario')) && (
                 <>
                   <li className="nav-item"><Link className="nav-link" to="/backoffice">Panel</Link></li>
-                  {isAdmin && (
-                    <li className="nav-item"><Link className="nav-link" to="/backoffice-empleados">Empleados</Link></li>
-                  )}
                   <li className="nav-item"><span className="nav-link">Hola, {user.name}</span></li>
                   <li className="nav-item"><button className="nav-link" onClick={logout}>CERRAR SESION</button></li>
                 </>

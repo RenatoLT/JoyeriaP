@@ -14,6 +14,8 @@ import Cart from './components/Cart.jsx'
 import Producto from './components/Product.jsx'
 import BackOffice from './components/BackOffice.jsx'
 import Checkout from './components/Checkout.jsx'
+import Blogs from './components/Blogs.jsx'
+import BlogDetail from './components/BlogDetail.jsx'
 import { Routes, Route } from 'react-router-dom'
 
 function App() {
@@ -24,12 +26,14 @@ function App() {
     <Routes>
       <Route path="/" element={<Home />} />
       <Route path="/catalog" element={<Catalog />} />
+      <Route path="/blogs" element={<Blogs />} />
       <Route path="/findus" element={<Findus />} />
       <Route path="/contact" element={<Contact />} />
       <Route path="/signin" element={<SignIn />} />
       <Route path="/login" element={<LogIn />} />
       <Route path="/aboutus" element={<AboutUs />} />
       <Route path="/cart" element={<Cart />} />
+      <Route path="/blog/:id" element={<BlogDetail />} />
       <Route path="/product/:id" element={<Producto />} />
       <Route path="/backoffice" element={<BackOffice />} />
       <Route path="/checkout" element={<Checkout />} />

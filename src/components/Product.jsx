@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import '../assets/css/carro.css'; // Usa tu CSS o agrega clases nuevas
+import '../assets/css/carro.css';
 
 function Producto() {
   const { id } = useParams();
