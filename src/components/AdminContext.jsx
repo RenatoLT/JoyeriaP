@@ -4,22 +4,16 @@ import api from '../api/axiosConfig';
 const AdminContext = createContext();
 
 export const AdminProvider = ({ children }) => {
-  // Al iniciar, buscamos si ya hay un usuario guardado con su token
   const [user, setUser] = useState(JSON.parse(localStorage.getItem('user')) || null);
 
-  // Función de Login REAL (conecta con Spring Boot)
+  // LOGIN REAL
   const login = async (email, password) => {
     try {
-      // 1. Petición al Backend
       const response = await api.post('/auth/login', { email, password });
+      const userData = response.data; // { token, nombre, role }
       
-      // 2. Si es exitoso, el backend devuelve { token, nombre, role }
-      const userData = response.data;
-      
-      // 3. Guardamos en el navegador y en el estado
       localStorage.setItem('user', JSON.stringify(userData));
       setUser(userData);
-      
       return { success: true };
     } catch (error) {
       console.error("Error login:", error);
@@ -30,12 +24,12 @@ export const AdminProvider = ({ children }) => {
   const logout = () => {
     localStorage.removeItem('user');
     setUser(null);
-    window.location.href = '/'; // Redirigir al Home
+    window.location.href = '/';
   };
 
-  // Verificamos roles según lo que envía el backend (ajusta si tus roles se llaman distinto)
-  const isAdmin = user?.role === 'ROLE_ADMIN' || user?.role === 'admin';
-  const isEmpleado = user?.role === 'ROLE_EMPLEADO' || user?.role === 'empleado';
+  // Ajuste de roles según lo que devuelve tu AuthController
+  const isAdmin = user?.role === 'admin' || user?.role === 'ROLE_ADMIN';
+  const isEmpleado = user?.role === 'empleado' || user?.role === 'ROLE_EMPLEADO';
 
   return (
     <AdminContext.Provider value={{ user, login, logout, isAdmin, isEmpleado }}>
