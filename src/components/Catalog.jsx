@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { Link } from 'react-router-dom';
+import api from '../api/axiosConfig';
 
 function Catalogo() {
   const [productos, setProductos] = useState([]);
@@ -23,23 +24,33 @@ function Catalogo() {
     setSearchText(search);
   }, [location.search]);
 
+  // CAMBIO: Cargar desde Spring Boot
   useEffect(() => {
-    fetch('/datos/catalog.json')
-      .then(res => res.json())
-      .then(setProductos)
-      .catch(() => setError(true));
+    api.get('/productos')
+      .then(res => {
+        setProductos(res.data);
+        setError(false);
+      })
+      .catch((err) => {
+        console.error(err);
+        setError(true);
+      });
   }, []);
 
   useEffect(() => {
     let filtrados = [...productos];
 
     if (categoriaFiltro) {
-      filtrados = filtrados.filter(p => p.categoria === categoriaFiltro);
+      // CAMBIO: Accedemos al nombre de la categoría dentro del objeto
+      filtrados = filtrados.filter(p => 
+        p.categoria?.nombreCategoria?.toLowerCase() === categoriaFiltro.toLowerCase()
+      );
     }
 
     if (searchText) {
+      // CAMBIO: Usamos 'nombreProducto'
       filtrados = filtrados.filter(p =>
-        p.nombre.toLowerCase().includes(searchText.toLowerCase())
+        p.nombreProducto.toLowerCase().includes(searchText.toLowerCase())
       );
     }
 
@@ -54,15 +65,21 @@ function Catalogo() {
     setProductosFiltrados(filtrados);
   }, [productos, categoriaFiltro, searchText, precioMin, precioMax]);
 
-  const agregarAlCarrito = (id) => {
+  // CAMBIO: Recibimos idProducto
+  const agregarAlCarrito = (idProducto) => {
     const carritoActual = JSON.parse(localStorage.getItem('carrito')) || [];
-    carritoActual.push(id);
-    localStorage.setItem('carrito', JSON.stringify(carritoActual));
+    // Evitamos duplicados si solo guardamos IDs
+    if (!carritoActual.includes(idProducto)) {
+       carritoActual.push(idProducto);
+       localStorage.setItem('carrito', JSON.stringify(carritoActual));
+       // Forzamos evento de storage para actualizar el contador del header
+       window.dispatchEvent(new Event('storage'));
+    }
     navigate('/cart');
   };
 
-  if (error) return <p>Error al cargar el catálogo.</p>;
-  if (!productos.length) return <p>Cargando productos...</p>;
+  if (error) return <p className="text-center mt-5">Error al cargar el catálogo. Revisa que el Backend esté encendido.</p>;
+  if (!productos.length) return <p className="text-center mt-5">Cargando productos...</p>;
 
   return (
     <div className="container my-5">
@@ -106,7 +123,7 @@ function Catalogo() {
                 type="number"
                 id="precioMax"
                 className="form-control"
-                placeholder={50000}
+                placeholder={500000}
                 value={precioMax}
                 onChange={e => setPrecioMax(e.target.value)}
               />
@@ -122,27 +139,31 @@ function Catalogo() {
           ) : (
             <div className="row">
               {productosFiltrados.map(producto => (
-
-                  <div className="col-md-4 mb-4" key={producto.id}>
+                  <div className="col-md-4 mb-4" key={producto.idProducto}> {/* CAMBIO: key idProducto */}
                     <div className="card h-100 shadow-sm">
-                      <Link to={`/product/${producto.id}`} className="text-decoration-none text-dark">
+                      <Link to={`/product/${producto.idProducto}`} className="text-decoration-none text-dark">
                         <img
-                          src={producto.foto}
+                          src={producto.foto || "https://via.placeholder.com/300"} // Fallback de imagen
                           className="card-img-top"
-                          alt={producto.nombre}
+                          alt={producto.nombreProducto}
                           style={{ height: '250px', objectFit: 'cover' }}
                         />
                         <div className="card-body d-flex flex-column justify-content-between">
                           <div>
-                            <h5 className="card-title">{producto.nombre}</h5>
-                            <p className="card-text">{producto.descripcion}</p>
+                            <h5 className="card-title">{producto.nombreProducto}</h5>
+                            <p className="card-text text-muted" style={{fontSize: '0.9rem'}}>
+                                {producto.descripcionProducto.substring(0, 60)}...
+                            </p>
                             <p className="card-text">
                               <b>Precio:</b> ${producto.precio.toLocaleString()}
                             </p>
                           </div>
                           <button
-                            className="btn btn-dark w-100"
-                            onClick={() => agregarAlCarrito(producto.id)}
+                            className="btn btn-dark w-100 mt-3"
+                            onClick={(e) => {
+                                e.preventDefault(); // Evitar navegación del Link
+                                agregarAlCarrito(producto.idProducto);
+                            }}
                           >
                             Agregar al carrito
                           </button>

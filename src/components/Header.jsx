@@ -39,6 +39,7 @@ function Header() {
               <li className="nav-item"><Link className="nav-link" to="/blogs">Blogs</Link></li>
               <li className="nav-item"><Link className="nav-link" to="/contact">Contacto</Link></li>
 
+              {/* 1. Si NO hay usuario, mostrar Login/Registro */}
               {!user && (
                 <>
                   <li className="nav-item"><Link className="nav-link" to="/signin">Iniciar sesión</Link></li>
@@ -46,11 +47,21 @@ function Header() {
                 </>
               )}
 
-              {(user && (isAdmin || isEmpleado || user.role === 'usuario')) && (
+              {/* 2. Solo Admin o Empleado ven el PANEL */}
+              {user && (isAdmin || isEmpleado) && (
+                 <li className="nav-item"><Link className="nav-link" to="/backoffice">Panel</Link></li>
+              )}
+
+              {/* 3. CUALQUIER usuario logueado ve su nombre y Logout */}
+              {user && (
                 <>
-                  <li className="nav-item"><Link className="nav-link" to="/backoffice">Panel</Link></li>
-                  <li className="nav-item"><span className="nav-link">Hola, {user.name}</span></li>
-                  <li className="nav-item"><button className="nav-link" onClick={logout}>CERRAR SESION</button></li>
+                  <li className="nav-item"><span className="nav-link">Hola, {user.nombre}</span></li>
+                  <li className="nav-item">
+                    {/* Usamos button con estilo nav-link para mejor accesibilidad */}
+                    <button className="nav-link btn btn-link text-uppercase text-decoration-none" onClick={logout}>
+                        CERRAR SESION
+                    </button>
+                  </li>
                 </>
               )}
 

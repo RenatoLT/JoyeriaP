@@ -11,34 +11,19 @@ function SignIn() {
   const [msg, setMsg] = useState('');
   const [msgColor, setMsgColor] = useState('');
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
+    setMsg(''); // Limpiar mensajes anteriores
 
-    // Usuarios normales
-    const storedUsers = JSON.parse(localStorage.getItem('usuarios')) || [];
-    const foundUser = storedUsers.find(u => u.email === email && u.password === password);
+    // Llamamos a la función login del contexto (que ahora es real y asíncrona)
+    const result = await login(email, password);
 
-    if (foundUser) {
-      login(email, foundUser.nombre);
-      navigate('/');
-      return;
+    if (result.success) {
+      navigate('/'); // Si funciona, vamos al inicio
+    } else {
+      setMsg(result.message || 'Correo o contraseña incorrectos.');
+      setMsgColor('red');
     }
-
-    // Admin fijo
-    if (email === 'admin@admin.com' && password === 'admin') {
-      login(email, 'Admin', 'admin');
-      navigate('/backoffice');
-      return;
-    }
-
-    if (email === 'empleado@empleado.com' && password === 'empleado') {
-      login(email, 'Empleado', 'empleado'); // rol 'empleado'
-      navigate('/backoffice'); // accede al panel pero no ve empleados
-      return;
-    }
-
-    setMsg('Correo o contraseña incorrectos.');
-    setMsgColor('red');
   };
 
   return (
@@ -48,8 +33,22 @@ function SignIn() {
           <div className="card shadow-sm p-4">
             <h2 className="text-center mb-4">Iniciar Sesión</h2>
             <form onSubmit={handleSubmit}>
-              <input type="email" className="form-control mb-3" placeholder="Correo electrónico" value={email} onChange={e => setEmail(e.target.value)} required />
-              <input type="password" className="form-control mb-3" placeholder="Contraseña" value={password} onChange={e => setPassword(e.target.value)} required />
+              <input 
+                type="email" 
+                className="form-control mb-3" 
+                placeholder="Correo electrónico" 
+                value={email} 
+                onChange={e => setEmail(e.target.value)} 
+                required 
+              />
+              <input 
+                type="password" 
+                className="form-control mb-3" 
+                placeholder="Contraseña" 
+                value={password} 
+                onChange={e => setPassword(e.target.value)} 
+                required 
+              />
 
               <div className="text-center mb-3" style={{ color: msgColor }}>{msg}</div>
 

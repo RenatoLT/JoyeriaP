@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import '../assets/css/carro.css';
 import { Link } from 'react-router-dom';
 import envio from '../assets/images/fast-delivery-icon-free-vector.jpg'
+import api from '../api/axiosConfig'; 
 
 function Cart() {
   const [productos, setProductos] = useState([]);
@@ -14,10 +15,19 @@ function Cart() {
   }, []);
 
   useEffect(() => {
-    fetch('/datos/catalog.json')
-      .then(res => res.json())
-      .then(data => {
-        const productosEnCarrito = data.filter(p => carrito.includes(p.id));
+    if (carrito.length === 0) {
+        setProductos([]);
+        return;
+    }
+
+    // CAMBIO: Traemos los productos del backend y filtramos
+    // (Idealmente el backend tendría un endpoint para buscar por lista de IDs, pero esto sirve por ahora)
+    api.get('/productos')
+      .then(res => {
+        const todosLosProductos = res.data;
+        // Filtramos los que están en el carrito (comparando idProducto)
+        const productosEnCarrito = todosLosProductos.filter(p => carrito.includes(p.idProducto));
+        // Inicializamos cantidad en 1
         setProductos(productosEnCarrito.map(p => ({ ...p, cantidad: 1 })));
       })
       .catch(err => console.error('Error al cargar productos', err));
@@ -33,19 +43,20 @@ function Cart() {
     setSubtotal(subtotalSinIva);
   }, [productos]);
 
-  const actualizarCantidad = (id, cantidad) => {
+  const actualizarCantidad = (idProducto, cantidad) => {
     setProductos(prev =>
       prev.map(p =>
-        p.id === id ? { ...p, cantidad: parseInt(cantidad) || 1 } : p
+        p.idProducto === idProducto ? { ...p, cantidad: parseInt(cantidad) || 1 } : p
       )
     );
   };
 
-  const eliminarProducto = id => {
-    const nuevoCarrito = carrito.filter(pid => pid !== id);
+  const eliminarProducto = (idProducto) => {
+    const nuevoCarrito = carrito.filter(pid => pid !== idProducto);
     setCarrito(nuevoCarrito);
     localStorage.setItem('carrito', JSON.stringify(nuevoCarrito));
-    setProductos(prev => prev.filter(p => p.id !== id));
+    window.dispatchEvent(new Event('storage')); // Actualizar header
+    setProductos(prev => prev.filter(p => p.idProducto !== idProducto));
   };
 
   const VALOR_ENVIO = 7290;
@@ -55,9 +66,10 @@ function Cart() {
 
   if (productos.length === 0) {
     return (
-      <div className="container py-5">
+      <div className="container py-5 text-center">
         <h2>Carrito de compras</h2>
         <p>No tienes productos en el carrito.</p>
+        <Link to="/catalog" className="btn btn-dark">Ir a comprar</Link>
       </div>
     );
   }
@@ -90,16 +102,17 @@ function Cart() {
 
             <tbody>
               {productos.map(producto => (
-                <tr key={producto.id}>
+                <tr key={producto.idProducto}> {/* CAMBIO: idProducto */}
                   <td className="producto">
                     <img
                       className="imagen-producto"
-                      src={producto.foto}
-                      alt={producto.nombre}
+                      src={producto.foto || "https://via.placeholder.com/100"}
+                      alt={producto.nombreProducto}
                     />
                     <div className="info-producto">
-                      <p>{producto.nombre}</p>
-                      <p>{producto.descripcion}</p>
+                      <p>{producto.nombreProducto}</p>
+                      {/* descripcionProducto */}
+                      <p className="text-muted" style={{fontSize: '0.8em'}}>{producto.descripcionProducto}</p>
                     </div>
                   </td>
                   <td className="precio">
@@ -112,7 +125,7 @@ function Cart() {
                       max={10}
                       defaultValue={producto.cantidad}
                       onChange={e =>
-                        actualizarCantidad(producto.id, e.target.value)
+                        actualizarCantidad(producto.idProducto, e.target.value)
                       }
                     />
                   </td>
@@ -122,7 +135,7 @@ function Cart() {
                   <td>
                     <button
                       className="btn btn-outline-secondary btn-sm"
-                      onClick={() => eliminarProducto(producto.id)}
+                      onClick={() => eliminarProducto(producto.idProducto)}
                     >
                       ❌
                     </button>

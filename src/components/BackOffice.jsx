@@ -1,9 +1,19 @@
 import { useState, useEffect } from 'react';
 import { useAdmin } from './AdminContext.jsx';
+import { useNavigate } from 'react-router-dom';
 import '../assets/css/backoffice.css';
 
 function BackOffice() {
   const { user, isAdmin, isEmpleado } = useAdmin();
+  const navigate = useNavigate();
+
+  // 3. SEGURIDAD: Expulsar si no es admin ni empleado
+  useEffect(() => {
+    if (user && !isAdmin && !isEmpleado) {
+      navigate('/'); // Lo mandamos al Home
+    }
+  }, [user, isAdmin, isEmpleado, navigate]);
+  
   const [productos, setProductos] = useState([]);
   const [selectedProducto, setSelectedProducto] = useState(null);
   const [formData, setFormData] = useState({

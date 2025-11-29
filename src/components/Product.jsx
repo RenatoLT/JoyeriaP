@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
+import api from '../api/axiosConfig';
 import '../assets/css/carro.css';
 
 function Producto() {
@@ -9,25 +10,22 @@ function Producto() {
   const [mensajeExito, setMensajeExito] = useState(null);
 
   useEffect(() => {
-    fetch('/datos/catalog.json')
-      .then(res => res.json())
-      .then(data => {
-        const p = data.find(item => item.id === parseInt(id));
-        if (!p) setError(true);
-        else setProducto(p);
-      })
+    // CAMBIO: Petición al endpoint /productos/{id}
+    api.get(`/productos/${id}`)
+      .then(res => setProducto(res.data))
       .catch(() => setError(true));
   }, [id]);
 
   const agregarAlCarrito = () => {
     const carritoActual = JSON.parse(localStorage.getItem('carrito')) || [];
-    if (!carritoActual.includes(producto.id)) {
-      carritoActual.push(producto.id);
+    // CAMBIO: Usamos idProducto
+    if (!carritoActual.includes(producto.idProducto)) {
+      carritoActual.push(producto.idProducto);
       localStorage.setItem('carrito', JSON.stringify(carritoActual));
+      window.dispatchEvent(new Event('storage'));
     }
     setMensajeExito('Producto agregado al carrito!');
     setTimeout(() => setMensajeExito(null), 3000);
-
   };
 
   if (error) return <p className="text-center py-5">Producto no encontrado.</p>;
@@ -40,8 +38,8 @@ function Producto() {
         <div className="col-md-5 text-center mb-4 mb-md-0">
           <div className="shadow rounded p-3 bg-white">
             <img
-              src={producto.foto}
-              alt={producto.nombre}
+              src={producto.foto || "https://via.placeholder.com/400"}
+              alt={producto.nombreProducto}
               className="img-fluid rounded"
               style={{ maxHeight: '450px', objectFit: 'cover' }}
             />
@@ -50,20 +48,16 @@ function Producto() {
 
         {/* Información del producto */}
         <div className="col-md-5">
-          <h2 className="fw-bold mb-3">{producto.nombre}</h2>
-          <p className="text-muted mb-3">{producto.descripcion}</p>
+          {/* CAMBIO: Nombres de propiedades del Backend */}
+          <h2 className="fw-bold mb-3">{producto.nombreProducto}</h2>
+          <p className="text-muted mb-3">{producto.descripcionProducto}</p>
           <h4 className="text-dark mb-4">${producto.precio.toLocaleString()}</h4>
 
-          <div className="mb-4">
-            <h5 className="fw-semibold">Especificaciones:</h5>
-            <ul className="list-unstyled ms-3">
-              {Object.entries(producto.especificaciones).map(([key, value]) => (
-                <li key={key} className="mb-1">
-                  <b>{key.charAt(0).toUpperCase() + key.slice(1)}:</b> {value}
-                </li>
-              ))}
-            </ul>
-          </div>
+          <p><b>Categoría:</b> {producto.categoria?.nombreCategoria}</p>
+          <p><b>Stock disponible:</b> {producto.stock}</p>
+          
+          {/* Nota: Las "especificaciones" no existen en la entidad Producto actual del Backend. 
+              Si las necesitas, habría que agregarlas como un campo JSON o String en Java. */}
 
           <button
             className="btn btn-dark btn-lg w-100 mb-3"
