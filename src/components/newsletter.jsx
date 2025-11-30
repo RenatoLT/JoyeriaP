@@ -1,5 +1,4 @@
 import { useState } from 'react';
-import letter from '../assets/images/pattern-bg.png';
 
 function Newsletter() {
   const [email, setEmail] = useState('');
@@ -21,7 +20,7 @@ function Newsletter() {
   };
 
   return (
-    <section className="newsletter bg-light"  style={{ backgroundImage: `url(${letter})`, backgroundSize: 'cover', backgroundPosition: 'center' }}>
+    <section className="newsletter bg-light"  style={{ backgroundImage: 'url(/images/pattern-bg.png)', backgroundSize: 'cover', backgroundPosition: 'center' }}>
       <div className="container">
         <div className="row justify-content-center">
           <div className="col-md-8 py-5 my-5">

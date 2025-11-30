@@ -1,545 +1,262 @@
 import { useState, useEffect } from 'react';
 import { useAdmin } from './AdminContext.jsx';
 import { useNavigate } from 'react-router-dom';
+import api from '../api/axiosConfig';
 import '../assets/css/backoffice.css';
 
 function BackOffice() {
   const { user, isAdmin, isEmpleado } = useAdmin();
   const navigate = useNavigate();
 
-  // 3. SEGURIDAD: Expulsar si no es admin ni empleado
+  // Estados para datos
+  const [activeTab, setActiveTab] = useState('productos');
+  const [productos, setProductos] = useState([]);
+  const [usuarios, setUsuarios] = useState([]);
+  const [pedidos, setPedidos] = useState([]);
+  const [reclamos, setReclamos] = useState([]);
+  const [loading, setLoading] = useState(false);
+  
+  // Estado Formulario Producto
+  const [isEditing, setIsEditing] = useState(false);
+  const [currentProduct, setCurrentProduct] = useState({
+    idProducto: null,
+    nombreProducto: '',
+    descripcionProducto: '',
+    precio: 0,
+    stock: 0,
+    foto: '',
+    categoriaId: 1
+  });
+
+  // Protección de ruta
   useEffect(() => {
     if (user && !isAdmin && !isEmpleado) {
-      navigate('/'); // Lo mandamos al Home
+      navigate('/');
     }
   }, [user, isAdmin, isEmpleado, navigate]);
-  
-  const [productos, setProductos] = useState([]);
-  const [selectedProducto, setSelectedProducto] = useState(null);
-  const [formData, setFormData] = useState({
-    nombre: '',
-    descripcion: '',
-    precio: '',
-    stock: '',
-    categoria: '',
-    especificaciones: {},
-    responsable: user ? user.name : ''
-  });
-  const [activeTab, setActiveTab] = useState('productos');
-  const [reclamos, setReclamos] = useState([]);
-  const [historial, setHistorial] = useState([]);
-  const [empleados, setEmpleados] = useState([]);
-  const [empleadoForm, setEmpleadoForm] = useState({
-    name: '',
-    email: '',
-    password: '',
-    role: 'empleado'
-  });
 
-
-  const [blogs, setBlogs] = useState([]);
-  const [selectedBlog, setSelectedBlog] = useState(null);
-  const [formBlog, setFormBlog] = useState({
-  responsable: user ? user.name : '',
-  titulo: "",
-  autor: "",
-  fecha: new Date().toISOString().split("T")[0],
-  cuerpo: ""
-});
-
-
-  // Cargar productos desde public/catalog.json
+  // Cargar datos al cambiar pestaña
   useEffect(() => {
-    fetch('/datos/catalog.json')
-      .then(res => res.json())
-      .then(data => {
-        const productosConStock = data.map(p => ({
-          ...p,
-          stock: p.stock || Math.floor(Math.random() * 20) + 3
-        }));
-        setProductos(productosConStock);
-      })
-      .catch(err => console.error('Error cargando productos:', err));
-  }, []);
+    loadData();
+  }, [activeTab]);
 
-  // Cargar reclamos desde localStorage
-  useEffect(() => {
-    const stored = JSON.parse(localStorage.getItem('reclamos')) || [];
-    setReclamos(stored);
-  }, []);
-
-  // Cargar empleados desde localStorage
-  useEffect(() => {
-    const storedEmpleados = JSON.parse(localStorage.getItem('empleados')) || [];
-    setEmpleados(storedEmpleados);
-  }, []);
-
-  useEffect(() => {
-      fetch('/datos/blogs.json')
-        .then(res => res.json())
-        .then(data => {
-          setBlogs(data);
-          localStorage.setItem('blogs', JSON.stringify(data));
-        })
-        .catch(err => console.error('Error cargando blogs:', err));
-  }, []);
-
-  // Actualizar responsable cuando cambie el usuario logueado
-  useEffect(() => {
-    setFormData(prev => ({ ...prev, responsable: user ? user.name : '' }));
-  }, [user]);
-
-  const categoriasEspecificaciones = {
-    collares: ['largo', 'material', 'broche'],
-    anillos: ['diametro', 'material', 'peso'],
-    aros: ['peso', 'material', 'cierre'],
-    pulseras: ['largo', 'material', 'broche'],
-    relojes: ['diametro', 'material', 'peso', 'broche']
+  const loadData = async () => {
+    setLoading(true);
+    try {
+      if (activeTab === 'productos') {
+        const res = await api.get('/productos');
+        setProductos(res.data);
+      } else if (activeTab === 'usuarios') {
+        const res = await api.get('/usuarios'); // Ahora funcionará con la ruta corregida en backend
+        setUsuarios(res.data);
+      } else if (activeTab === 'pedidos') {
+        const res = await api.get('/pedidos');
+        setPedidos(res.data);
+      } else if (activeTab === 'reclamos') {
+        const res = await api.get('/reclamos');
+        setReclamos(res.data);
+      }
+    } catch (error) {
+      console.error("Error cargando datos:", error);
+    } finally {
+      setLoading(false);
+    }
   };
+
+  // --- CRUD PRODUCTOS ---
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
-    if (name.startsWith('especificacion-')) {
-      setFormData(prev => ({
-        ...prev,
-        especificaciones: {
-          ...prev.especificaciones,
-          [name.replace('especificacion-', '')]: value
+    setCurrentProduct({ ...currentProduct, [name]: value });
+  };
+
+  const saveProduct = async (e) => {
+    e.preventDefault();
+    const productoData = {
+        nombreProducto: currentProduct.nombreProducto,
+        descripcionProducto: currentProduct.descripcionProducto,
+        precio: parseInt(currentProduct.precio),
+        stock: parseInt(currentProduct.stock),
+        foto: currentProduct.foto,
+        categoria: { idCategoria: parseInt(currentProduct.categoriaId) } // Objeto anidado
+    };
+
+    try {
+        if (isEditing) {
+            await api.put(`/productos/${currentProduct.idProducto}`, productoData);
+            alert('¡Producto actualizado!');
+        } else {
+            await api.post('/productos', productoData);
+            alert('¡Producto creado!');
         }
-      }));
-    } else {
-      setFormData(prev => ({ ...prev, [name]: value }));
+        setIsEditing(false);
+        resetForm();
+        loadData();
+    } catch (error) {
+        console.error(error);
+        alert("Error al guardar. Verifica los datos.");
     }
   };
 
-  const handleEdit = (producto) => {
-    setSelectedProducto(producto);
-    setFormData({
-      nombre: producto.nombre,
-      descripcion: producto.descripcion,
-      precio: producto.precio,
-      stock: producto.stock,
-      categoria: producto.categoria,
-      especificaciones: { ...producto.especificaciones },
-      responsable: user ? user.name : ''
-    });
-  };
-
-  const handleBlogEdit = (blog) => {
-    setSelectedBlog(blog);
-    setFormBlog({
-      responsable: user ? user.name : '',
-      titulo: blog.titulo,
-      autor: blog.autor,
-      fecha: blog.fecha,
-      cuerpo: blog.cuerpo
-    });
-  };
-
-  const handleSubmit = (e) => {
-    e.preventDefault();
-
-    const newProducto = {
-      ...formData,
-      id: selectedProducto ? selectedProducto.id : Date.now()
-    };
-
-    let updatedProductos;
-    if (selectedProducto) {
-      updatedProductos = productos.map(p => p.id === selectedProducto.id ? newProducto : p);
-    } else {
-      updatedProductos = [...productos, newProducto];
-    }
-    setProductos(updatedProductos);
-
-    // Guardar historial
-    setHistorial(prev => [
-      ...prev,
-      {
-        id: newProducto.id,
-        nombre: newProducto.nombre,
-        precio: newProducto.precio,
-        stock: newProducto.stock,
-        categoria: newProducto.categoria,
-        responsable: user ? user.name : '',
-        fecha: new Date().toLocaleString(),
-        accion: selectedProducto ? 'Editar' : 'Agregar'
+  const deleteProduct = async (id) => {
+    if (window.confirm('¿Eliminar este producto?')) {
+      try {
+        await api.delete(`/productos/${id}`);
+        loadData();
+      } catch (error) {
+        alert("No se puede eliminar. Probablemente tiene pedidos asociados.");
       }
-    ]);
-
-    // Reset formulario
-    setFormData({
-      nombre: '',
-      descripcion: '',
-      precio: '',
-      stock: '',
-      categoria: '',
-      especificaciones: {},
-      responsable: user ? user.name : ''
-    });
-    setSelectedProducto(null);
-  };
-
-  const renderEspecificacionesFields = () => {
-    const keys = categoriasEspecificaciones[formData.categoria] || [];
-    return keys.map(key => (
-      <div className="form-group" key={key}>
-        <label htmlFor={`especificacion-${key}`}>{key.charAt(0).toUpperCase() + key.slice(1)}</label>
-        <input
-          type="text"
-          id={`especificacion-${key}`}
-          name={`especificacion-${key}`}
-          value={formData.especificaciones[key] || ''}
-          onChange={handleInputChange}
-        />
-      </div>
-    ));
-  };
-
-  const handleEmpleadoChange = (e) => {
-    const { name, value } = e.target;
-    setEmpleadoForm(prev => ({ ...prev, [name]: value }));
-  };
-
-  const handleEmpleadoSubmit = (e) => {
-    e.preventDefault();
-    const newEmpleado = { ...empleadoForm, id: Date.now() };
-    const updatedEmpleados = [...empleados, newEmpleado];
-    setEmpleados(updatedEmpleados);
-    localStorage.setItem('empleados', JSON.stringify(updatedEmpleados));
-
-    setEmpleadoForm({
-      name: '',
-      email: '',
-      password: '',
-      role: 'empleado'
-    });
-  };
-
-  const handleBlogChange = (e) => {
-    const { name, value } = e.target;
-    setFormBlog(prev => ({ ...prev, [name]: value }));
-  };
-
-  const handleBlogSubmit = (e) => {
-    e.preventDefault();
-
-    const nuevoBlog = {
-      ...formBlog,
-      id: selectedBlog ? selectedBlog.id : Date.now()
-    };
-
-    let updatedBlogs;
-    if (selectedBlog) {
-      updatedBlogs = blogs.map(b => b.id === selectedBlog.id ? nuevoBlog : b);
-    } else {
-      updatedBlogs = [...blogs, nuevoBlog];
     }
+  };
 
-    setBlogs(updatedBlogs);
-    localStorage.setItem('blogs', JSON.stringify(updatedBlogs));
-
-    // Reset
-    setFormBlog({
-      responsable: user ? user.name : '',
-      titulo: "",
-      autor: "",
-      fecha: new Date().toISOString().split("T")[0],
-      cuerpo: ""
+  const editProduct = (p) => {
+    setIsEditing(true);
+    setCurrentProduct({
+        idProducto: p.idProducto,
+        nombreProducto: p.nombreProducto,
+        descripcionProducto: p.descripcionProducto,
+        precio: p.precio,
+        stock: p.stock,
+        foto: p.foto,
+        categoriaId: p.categoria?.idCategoria || 1
     });
-
-    setSelectedBlog(null);
   };
 
-  const handleBlogDelete = (id) => {
-    const updated = blogs.filter(b => b.id !== id);
-    setBlogs(updated);
-    localStorage.setItem('blogs', JSON.stringify(updated));
+  const resetForm = () => {
+    setIsEditing(false);
+    setCurrentProduct({ idProducto: null, nombreProducto: '', descripcionProducto: '', precio: 0, stock: 0, foto: '', categoriaId: 1 });
   };
+
+  // --- VISTA ---
+  if (!user || (!isAdmin && !isEmpleado)) return null;
 
   return (
-    <div className="backoffice-container">
-      <h1>Panel de Administración</h1>
+    <div className="backoffice-container container my-5">
+      <h2 className="text-center mb-4">Panel de Administración</h2>
+      
+      <ul className="nav nav-tabs mb-4">
+        {['productos', 'usuarios', 'pedidos', 'reclamos'].map(tab => (
+            <li className="nav-item" key={tab}>
+                <button 
+                    className={`nav-link ${activeTab === tab ? 'active' : ''} text-capitalize`} 
+                    onClick={() => setActiveTab(tab)}
+                >{tab}</button>
+            </li>
+        ))}
+      </ul>
 
+      {loading && <p className="text-center">Cargando datos...</p>}
 
-
-      <div className="tab-buttons mb-4">
-        <button className={`tab-btn ${activeTab === 'productos' ? 'active' : ''}`} onClick={() => setActiveTab('productos')}>Productos</button>
-        <button className={`tab-btn ${activeTab === 'reclamos' ? 'active' : ''}`} onClick={() => setActiveTab('reclamos')}>Reclamos</button>
-        <button className={`tab-btn ${activeTab === 'historial' ? 'active' : ''}`} onClick={() => setActiveTab('historial')}>Historial de cambios</button>
-        <button className={`tab-btn ${activeTab === 'blogs' ? 'active' : ''}`} onClick={() => setActiveTab('blogs')}>Blogs</button>
-
-        {isAdmin && (
-          <button className={`tab-btn ${activeTab === 'empleados' ? 'active' : ''}`} onClick={() => setActiveTab('empleados')}>
-            Empleados
-          </button>
-        )}
-      </div>
-
-
-      {/* --- Productos --- */}
-      {activeTab === 'productos' && (
-        <div className="admin-panel flex">
-          <section className="form-container">
-            <h2>{selectedProducto ? 'Editar Producto' : 'Agregar Producto'}</h2>
-            <form id="product-form" onSubmit={handleSubmit}>
-              <div className="form-group">
-                <label>Responsable</label>
-                <input type="text" value={formData.responsable} readOnly />
-              </div>
-              <div className="form-group">
-                <label htmlFor="product-name">Nombre del producto</label>
-                <input type="text" id="product-name" name="nombre" value={formData.nombre} onChange={handleInputChange} required />
-              </div>
-              <div className="form-group">
-                <label htmlFor="product-description">Descripción</label>
-                <textarea id="product-description" name="descripcion" rows={4} value={formData.descripcion} onChange={handleInputChange} />
-              </div>
-              <div className="form-row">
-                <div className="form-group">
-                  <label htmlFor="product-price">Precio</label>
-                  <input type="number" id="product-price" name="precio" value={formData.precio} onChange={handleInputChange} step="1" min="0" required />
-                </div>
-                <div className="form-group">
-                  <label htmlFor="product-stock">Stock</label>
-                  <input type="number" id="product-stock" name="stock" value={formData.stock} onChange={handleInputChange} step="1" min="1" required />
+      {/* PRODUCTOS */}
+      {!loading && activeTab === 'productos' && (
+        <div>
+          <div className="card p-4 mb-4 shadow-sm bg-light">
+            <h5>{isEditing ? 'Editar Producto' : 'Nuevo Producto'}</h5>
+            <form onSubmit={saveProduct}>
+              <div className="row g-2">
+                <div className="col-md-6"><input className="form-control" name="nombreProducto" placeholder="Nombre" value={currentProduct.nombreProducto} onChange={handleInputChange} required /></div>
+                <div className="col-md-6"><input className="form-control" name="foto" placeholder="URL Foto" value={currentProduct.foto} onChange={handleInputChange} /></div>
+                <div className="col-12"><input className="form-control" name="descripcionProducto" placeholder="Descripción" value={currentProduct.descripcionProducto} onChange={handleInputChange} required /></div>
+                <div className="col-md-4"><input type="number" className="form-control" name="precio" placeholder="Precio" value={currentProduct.precio} onChange={handleInputChange} required /></div>
+                <div className="col-md-4"><input type="number" className="form-control" name="stock" placeholder="Stock" value={currentProduct.stock} onChange={handleInputChange} required /></div>
+                <div className="col-md-4">
+                    <select className="form-select" name="categoriaId" value={currentProduct.categoriaId} onChange={handleInputChange}>
+                        <option value="1">Anillos</option>
+                        <option value="2">Collares</option>
+                        <option value="3">Pulseras</option>
+                        <option value="4">Relojes</option>
+                        <option value="5">Aros</option>
+                        <option value="6">Piedras</option>
+                    </select>
                 </div>
               </div>
-              <div className="form-group">
-                <label htmlFor="product-category">Categoría</label>
-                <select id="product-category" name="categoria" value={formData.categoria} onChange={handleInputChange}>
-                  {Object.keys(categoriasEspecificaciones).map(cat => (
-                    <option key={cat} value={cat}>{cat.charAt(0).toUpperCase() + cat.slice(1)}</option>
-                  ))}
-                </select>
-              </div>
-              {renderEspecificacionesFields()}
-              <div className="form-actions">
-                <button type="submit" className="btn-save">{selectedProducto ? 'Actualizar' : 'Guardar'}</button>
-              </div>
+              <button type="submit" className="btn btn-success mt-3 w-100">{isEditing ? 'Actualizar' : 'Guardar'}</button>
+              {isEditing && <button type="button" className="btn btn-secondary mt-2 w-100" onClick={resetForm}>Cancelar</button>}
             </form>
-          </section>
+          </div>
 
-          <section className="product-list-container">
-            <h2>Productos</h2>
-            <table className="product-table">
-              <thead>
-                <tr>
-                  <th>Nombre</th><th>Precio</th><th>Stock</th><th>Categoría</th><th>Acciones</th>
-                </tr>
-              </thead>
-              <tbody>
-                {productos.map(p => (
-                  <tr key={p.id}>
-                    <td>{p.nombre}</td>
-                    <td>${p.precio.toLocaleString('es-CL')}</td>
-                    <td>{p.stock}</td>
-                    <td>{p.categoria}</td>
-                    <td>
-                      <button className="btn-edit" onClick={() => handleEdit(p)}>Editar</button>
-                      <button className="btn-delete">Eliminar</button>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
+          <div className="table-responsive">
+            <table className="table table-hover">
+                <thead className="table-dark"><tr><th>ID</th><th>Nombre</th><th>Precio</th><th>Stock</th><th>Acciones</th></tr></thead>
+                <tbody>
+                    {productos.map(p => (
+                        <tr key={p.idProducto}>
+                            <td>{p.idProducto}</td>
+                            <td>{p.nombreProducto}</td>
+                            <td>${p.precio.toLocaleString()}</td>
+                            <td>{p.stock}</td>
+                            <td>
+                                <button className="btn btn-sm btn-primary me-2" onClick={() => editProduct(p)}>Editar</button>
+                                <button className="btn btn-sm btn-danger" onClick={() => deleteProduct(p.idProducto)}>Borrar</button>
+                            </td>
+                        </tr>
+                    ))}
+                </tbody>
             </table>
-          </section>
+          </div>
         </div>
       )}
 
-      {/* --- Reclamos --- */}
-      {activeTab === 'reclamos' && (
-        <div className="reclamos-container">
-          <h2>Reclamos Guardados</h2>
-          {reclamos.length === 0 ? <p>No hay reclamos guardados.</p> : (
-            <table className="product-table">
-              <thead>
-                <tr>
-                  <th>Nombre</th><th>RUT</th><th>Correo</th><th>Teléfono</th><th>Problema</th><th>Duda</th><th>Fecha</th>
-                </tr>
-              </thead>
-              <tbody>
-                {reclamos.map((r, i) => (
-                  <tr key={i}>
-                    <td>{r.nombre}</td><td>{r.rut}</td><td>{r.correo}</td><td>{r.telefono}</td><td>{r.problema}</td><td>{r.duda}</td><td>{r.fecha}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          )}
-        </div>
-      )}
-
-      {/* --- Historial --- */}
-      {activeTab === 'historial' && (
-        <div className="historial-container">
-          <h2>Historial de Cambios</h2>
-          {historial.length === 0 ? <p>No hay cambios registrados.</p> : (
-            <table className="product-table">
-              <thead>
-                <tr>
-                  <th>Acción</th><th>Nombre</th><th>Precio</th><th>Stock</th><th>Categoría</th><th>Responsable</th><th>Fecha</th>
-                </tr>
-              </thead>
-              <tbody>
-                {historial.map((h, i) => (
-                  <tr key={i}>
-                    <td>{h.accion}</td><td>{h.nombre}</td><td>${h.precio.toLocaleString('es-CL')}</td><td>{h.stock}</td><td>{h.categoria}</td><td>{h.responsable}</td><td>{h.fecha}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          )}
-        </div>
-      )}
-
-      {/* --- Empleados (solo admin) --- */}
-      {activeTab === 'empleados' && isAdmin && (
-        <div className="empleados-container">
-          <h2>Gestión de Empleados</h2>
-          <form onSubmit={handleEmpleadoSubmit} className="empleado-form">
-            <input type="text" name="name" value={empleadoForm.name} placeholder="Nombre" onChange={handleEmpleadoChange} required />
-            <input type="email" name="email" value={empleadoForm.email} placeholder="Correo" onChange={handleEmpleadoChange} required />
-            <input type="password" name="password" value={empleadoForm.password} placeholder="Contraseña" onChange={handleEmpleadoChange} required />
-            <select name="role" value={empleadoForm.role} onChange={handleEmpleadoChange}>
-              <option value="empleado">Empleado</option>
-              <option value="admin">Admin</option>
-            </select>
-            <button type="submit" className="btn-save">Crear Empleado</button>
-          </form>
-
-          <h3>Lista de Empleados</h3>
-          <table className="product-table">
-            <thead>
-              <tr><th>Nombre</th><th>Email</th><th>Rol</th></tr>
-            </thead>
+      {/* USUARIOS */}
+      {!loading && activeTab === 'usuarios' && (
+        <div className="table-responsive">
+            <table className="table table-hover">
+            <thead className="table-dark"><tr><th>ID</th><th>Nombre</th><th>Email</th><th>RUT</th><th>Teléfono</th></tr></thead>
             <tbody>
-              {empleados.map(emp => (
-                <tr key={emp.id}>
-                  <td>{emp.name}</td>
-                  <td>{emp.email}</td>
-                  <td>{emp.role}</td>
+                {usuarios.map(u => (
+                <tr key={u.id}>
+                    <td>{u.id}</td>
+                    <td>{u.nombre} {u.apellido1}</td>
+                    <td>{u.email}</td>
+                    <td>{u.run}-{u.dv}</td>
+                    <td>{u.telefono}</td>
                 </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      )}
-      {activeTab === 'blogs' && (
-        <div className="admin-panel flex">
-
-          {/* Formulario para agregar o editar blogs */}
-          <section className="form-container">
-            <h2>{selectedBlog ? 'Editar Blog' : 'Agregar Blog'}</h2>
-
-            <form id="blog-form" onSubmit={handleBlogSubmit}>
-
-              <div className="form-group">
-                <label>Responsable</label>
-                <input type="text" value={formBlog.responsable} readOnly />
-              </div>
-
-              <div className="form-group">
-                <label htmlFor="blog-title">Título del Blog</label>
-                <input
-                  type="text"
-                  id="blog-title"
-                  name="titulo"
-                  value={formBlog.titulo}
-                  onChange={handleBlogChange}
-                  required
-                />
-              </div>
-
-              <div className="form-group">
-                <label htmlFor="blog-author">Autor</label>
-                <input
-                  type="text"
-                  id="blog-author"
-                  name="autor"
-                  value={formBlog.autor}
-                  onChange={handleBlogChange}
-                  required
-                />
-              </div>
-
-              <div className="form-group">
-                <label htmlFor="blog-date">Fecha</label>
-                <input
-                  type="date"
-                  id="blog-date"
-                  name="fecha"
-                  value={formBlog.fecha}
-                  onChange={handleBlogChange}
-                  readOnly
-                />
-              </div>
-
-              <div className="form-group">
-                <label htmlFor="blog-body">Contenido</label>
-                <textarea
-                  id="blog-body"
-                  name="cuerpo"
-                  rows={8}
-                  value={formBlog.cuerpo}
-                  onChange={handleBlogChange}
-                  required
-                />
-              </div>
-
-              <div className="form-actions">
-                <button type="submit" className="btn-save">
-                  {selectedBlog ? 'Actualizar' : 'Guardar'}
-                </button>
-              </div>
-            </form>
-          </section>
-
-          {/* Tabla de blogs existentes */}
-          <section className="product-list-container">
-            <h2>Blogs</h2>
-
-            <table className="product-table">
-              <thead>
-                <tr>
-                  <th className='w-35'>Título</th>
-                  <th className='w-20'>Autor</th>
-                  <th className='w-25'>Fecha</th>
-                  <th className='w-25'>Acciones</th>
-                </tr>
-              </thead>
-
-              <tbody>
-                {blogs.map(b => (
-                  <tr key={b.id}>
-                    <td>{b.titulo}</td>
-                    <td>{b.autor}</td>
-                    <td>{b.fecha || '—'}</td>
-                    <td>
-                      <button
-                        className="btn-edit"
-                        onClick={() => handleBlogEdit(b)}
-                      >
-                        Editar
-                      </button>
-
-                      <button
-                        className="btn-delete"
-                        onClick={() => handleBlogDelete(b.id)}
-                      >
-                        Eliminar
-                      </button>
-                    </td>
-                  </tr>
                 ))}
-              </tbody>
+            </tbody>
             </table>
-          </section>
         </div>
       )}
 
+      {/* PEDIDOS */}
+      {!loading && activeTab === 'pedidos' && (
+        <div className="table-responsive">
+            <table className="table table-hover">
+            <thead className="table-dark"><tr><th>ID</th><th>Fecha</th><th>Cliente</th><th>Total</th><th>Estado</th></tr></thead>
+            <tbody>
+                {pedidos.map(ped => (
+                <tr key={ped.idPedido}>
+                    <td>{ped.idPedido}</td>
+                    <td>{ped.fechaPedido}</td>
+                    {/* Ahora 'usuario' será visible gracias al cambio en Pedido.java */}
+                    <td>{ped.usuario ? `${ped.usuario.nombre} ${ped.usuario.apellido1}` : 'Desconocido'}</td>
+                    <td>${ped.totalPedido.toLocaleString()}</td>
+                    <td><span className="badge bg-info text-dark">{ped.estadoPedido}</span></td>
+                </tr>
+                ))}
+            </tbody>
+            </table>
+        </div>
+      )}
 
-
+      {/* RECLAMOS */}
+      {!loading && activeTab === 'reclamos' && (
+        <div className="table-responsive">
+            <table className="table table-hover">
+            <thead className="table-dark"><tr><th>ID</th><th>Nombre</th><th>Asunto</th><th>Mensaje</th><th>Contacto</th></tr></thead>
+            <tbody>
+                {reclamos.map(r => (
+                <tr key={r.idReclamo}>
+                    <td>{r.idReclamo}</td>
+                    <td>{r.nombre}</td>
+                    <td>{r.problema}</td>
+                    <td>{r.duda}</td>
+                    <td>{r.correo}</td>
+                </tr>
+                ))}
+            </tbody>
+            </table>
+        </div>
+      )}
     </div>
   );
 }

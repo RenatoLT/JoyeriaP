@@ -1,7 +1,6 @@
 import { useEffect, useState } from 'react';
 import '../assets/css/carro.css';
 import { Link } from 'react-router-dom';
-import envio from '../assets/images/fast-delivery-icon-free-vector.jpg'
 import api from '../api/axiosConfig'; 
 
 function Cart() {
@@ -84,7 +83,7 @@ function Cart() {
 
       <div className="principal">
         <div className="primer-texto">
-          <img className="col-md-1" loading="lazy" src={envio} alt="envio gratis" />
+          <img className="col-md-1" loading="lazy" src="/images/fast-delivery-icon-free-vector.jpg" alt="envio gratis" />
           <p>Envío gratis en todas tus compras superiores a $109.000</p>
         </div>
 

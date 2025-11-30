@@ -1,7 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { useAdmin } from '../components/AdminContext';
-import logoO from '../assets/images/logo_o.png';
 import SearchPopup from './SearchPopup'
 
 function Header() {
@@ -19,7 +18,7 @@ function Header() {
   return (
     <nav className="navbar navbar-expand-lg navbar-light bg-light text-uppercase fs-6 p-3 border-bottom align-items-center">
       <div className="container-fluid">
-        <Link className="navbar-brand" to="/"><img src={logoO} alt="Logo" className="navbar-logo img-fluid" /></Link>
+        <Link className="navbar-brand" to="/"><img src="/images/logo_o.png" alt="Logo" className="navbar-logo img-fluid" /></Link>
 
         <button className="navbar-toggler" type="button" data-bs-toggle="offcanvas" data-bs-target="#offcanvasNavbar">
           <span className="navbar-toggler-icon" />

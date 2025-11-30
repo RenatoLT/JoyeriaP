@@ -1,9 +1,3 @@
-import logoC from '../assets/images/logo_c.png';
-import arctIcon from '../assets/images/arct-icon.png';
-import dhlLogo from '../assets/images/dhl-logo.png';
-import visaCard from '../assets/images/visa-card.png';
-import paypalCard from '../assets/images/paypal-card.png';
-import masterCard from '../assets/images/master-card.png';
 import { Link } from 'react-router-dom';
 
 function Footer() {
@@ -15,7 +9,7 @@ function Footer() {
             <div className="footer-menu footer-menu-001">
             <div className="footer-intro mb-4">
                 <Link to="/">
-                    <img src={logoC} alt="logo" className="footer-logo img-fluid" />
+                    <img src="/images/logo_c.png" alt="logo" className="footer-logo img-fluid" />
                 </Link>
             </div>
             <p>En Hoseki, creemos que cada joya cuenta una historia. 
@@ -111,14 +105,14 @@ function Footer() {
             <div className="col-md-6 d-flex flex-wrap">
             <div className="shipping">
                 <span>Enviamos con:</span>
-                <img src={arctIcon} alt="icon" className="img-fluid" />
-                <img src={dhlLogo} alt="icon" className="img-fluid" />
+                <img src="/images/arct-icon.png" alt="icon" className="img-fluid" />
+                <img src="/images/dhl-logo.png" alt="icon" className="img-fluid" />
             </div>
             <div className="payment-option">
                 <span>Opción de Pago:</span>
-                <img src={visaCard} alt="card" className="img-fluid" />
-                <img src={paypalCard} alt="card" className="img-fluid" />
-                <img src={masterCard} alt="card" className="img-fluid" />
+                <img src="/images/visa-card.png" alt="card" className="img-fluid" />
+                <img src="/images/paypal-card.png" alt="card" className="img-fluid" />
+                <img src="/images/master-card.png" alt="card" className="img-fluid" />
             </div>
             </div>
             <div className="col-md-6 text-end">
