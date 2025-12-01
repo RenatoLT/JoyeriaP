@@ -1,0 +1,16 @@
+[
+  {
+    "id": 1,
+    "titulo": "Cómo elegir la joya perfecta para cada día",
+    "autor": "María Silva",
+    "fecha": "10-10-2025",
+    "cuerpo": "Durante mucho tiempo, la joyería cargó con la fama de ser 'solo para eventos importantes'. Hoy, la realidad es distinta: las joyas se han movido del baúl de las ocasiones especiales al cajón de la vida diaria..."
+  },
+  {
+    "id": 2,
+    "titulo": "Lo que cuentan las piedras y los metales",
+    "autor": "Carlos Soto",
+    "fecha": "15-07-2025",
+    "cuerpo": "Hay materiales que parecen guardar un pulso propio. Por eso, desde tiempos antiguos, las piedras y los metales no solo se han apreciado por su belleza, sino también por el significado que cargan..."
+  }
+]
