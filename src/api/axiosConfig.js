@@ -1,7 +1,7 @@
 import axios from 'axios';
 
 const api = axios.create({
-    baseURL: 'http://3.141.164.49:8080/api/v1', // La URL de tu Spring Boot
+    baseURL: 'https://rheumic-faddishly-merrie.ngrok-free.dev/api/v1', // La URL de tu Spring Boot
     headers: {
         'Content-Type': 'application/json'
     }
